@@ -10,7 +10,7 @@ const PORT = 4000;
 const app = express();
 
 app.use(cors({
-    origin: 'https://video-downloader-hazel-six.vercel.app/', // Adjust if your frontend runs on a different port
+    origin: ['http://localhost:5173', "https://video-downloader-backend-1-wzho.onrender.com"],
 }));
 app.use(express.json());
 
@@ -32,7 +32,10 @@ app.post('/api/video-info', async (req: Request<{}, {}, InfoRequest>, res: Respo
     }
 
     try {
-        const { stdout } = await execPromise(`/usr/bin/yt-dlp --dump-json "${url}"`);
+        const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+        const cmd = `/usr/bin/yt-dlp --user-agent "${userAgent}" --dump-json "${url}"`;
+        
+        const { stdout } = await execPromise(cmd);
         const output = JSON.parse(stdout);
 
         if (!output || !output.formats) {
@@ -49,7 +52,7 @@ app.post('/api/video-info', async (req: Request<{}, {}, InfoRequest>, res: Respo
                     ext: f.ext === 'webm' ? 'mp4' : f.ext,
                     fps: f.fps ? `${f.fps}fps` : ''
                 };
-            });
+              });
 
         const uniqueFormats = formats
             .filter((value: any, index: number, self: any[]) =>
@@ -63,8 +66,10 @@ app.post('/api/video-info', async (req: Request<{}, {}, InfoRequest>, res: Respo
             formats: uniqueFormats
         });
 
-    } catch (error) {
-        console.error('Error fetching info:', error);
+    } catch (error: any) {
+        console.error('--- YT-DLP INFO ERROR LOG ---');
+        console.error(error.stderr || error.message);
+        console.error('-----------------------------');
         res.status(500).json({ error: 'Failed to fetch video details' });
     }
 });
@@ -81,8 +86,9 @@ app.post('/api/download', async (req: Request<{}, {}, DownloadRequest>, res: Res
     const outputPath = path.join(DOWNLOAD_DIR, outputFilename);
 
     try {
-        // yt-dlp CLI command
-        const cmd = `/usr/bin/yt-dlp -f "${formatId}+bestaudio/best" --merge-output-format mp4 --no-check-certificates "${url}" -o "${outputPath}"`;
+        const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+        
+        const cmd = `/usr/bin/yt-dlp --user-agent "${userAgent}" -f "${formatId}+bestaudio/best" --merge-output-format mp4 --no-check-certificates "${url}" -o "${outputPath}"`;
         await execPromise(cmd);
 
         res.download(outputPath, 'downloaded_video.mp4', async (err) => {
@@ -90,7 +96,10 @@ app.post('/api/download', async (req: Request<{}, {}, DownloadRequest>, res: Res
             await fs.remove(outputPath).catch(e => console.error(e));
         });
 
-    } catch (error) {
+    } catch (error: any) {
+        console.error('--- YT-DLP DOWNLOAD ERROR LOG ---');
+        console.error(error.stderr || error.message);
+        console.error('---------------------------------');
         await fs.remove(outputPath).catch(e => console.error(e));
         res.status(500).json({ error: 'Download processing failed' });
     }
