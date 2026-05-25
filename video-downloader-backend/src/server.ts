@@ -9,7 +9,9 @@ const execPromise = promisify(exec);
 const PORT = 4000;
 const app = express();
 
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:5173', // Adjust if your frontend runs on a different port
+}));
 app.use(express.json());
 
 const DOWNLOAD_DIR = path.join(__dirname, 'downloads');
