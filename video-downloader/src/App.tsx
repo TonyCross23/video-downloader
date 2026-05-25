@@ -20,6 +20,8 @@ function App() {
   const [videoData, setVideoData] = useState<VideoData | null>(null);
   const [error, setError] = useState('');
 
+  const API_BASE = (import.meta.env.VITE_API_BASE as string) || 'http://localhost:4000'; // Change this if your backend is hosted elsewhere
+
   // 1. Fetch available resolutions and video metadata from API
   const fetchResolutions = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +31,7 @@ function App() {
     setVideoData(null);
 
     try {
-      const response = await fetch('http://localhost:4000/api/video-info', {
+      const response = await fetch(`${API_BASE}/api/video-info`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
@@ -48,7 +50,7 @@ function App() {
   const downloadWithQuality = async (formatId: string, resolution: string) => {
     setDlLoading(formatId); // Set loading state for the clicked button only
     try {
-      const response = await fetch('http://localhost:4000/api/download', {
+      const response = await fetch(`${API_BASE}/api/download`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url, formatId }),
