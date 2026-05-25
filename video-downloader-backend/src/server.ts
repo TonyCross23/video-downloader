@@ -10,7 +10,7 @@ const PORT = 4000;
 const app = express();
 
 app.use(cors({
-    origin: 'http://localhost:5173', // Adjust if your frontend runs on a different port
+    origin: 'https://video-downloader-hazel-six.vercel.app/', // Adjust if your frontend runs on a different port
 }));
 app.use(express.json());
 
