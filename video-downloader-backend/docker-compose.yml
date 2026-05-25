@@ -1,9 +1,11 @@
 services:
   backend:
-    build: ./video-downloader-backend
+    build: .
     ports:
       - "4000:4000"
     volumes:
-      - ./video-downloader-backend:/app
+      - .:/app
+      - /app/node_modules
+      - /app/dist
     environment:
       - NODE_ENV=development
